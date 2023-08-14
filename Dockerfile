@@ -26,8 +26,11 @@ WORKDIR /go/src/findmydeviceserver
 # https://gitlab.com/Nulide/findmydeviceserver/-/blob/master/Dockerfile?ref_type=heads
 RUN --mount=type=cache,target=/root/.cache \
   wget -qO- https://raw.githubusercontent.com/objectbox/objectbox-go/main/install.sh | bash && \
-  go build -o /fmd cmd/fmdserver.go && \
-  mkdir /data /libs && \
+  mkdir /data /libs /config /fmd && \
+  go build -o /fmd/server cmd/fmdserver.go && \
+  cp -r web/ /fmd/web && \
+  ln -sf /data /fmd/objectbox && \
+  ln -sf /config/config.json /fmd/config.json && \
   ldd /usr/lib/libobjectbox.so | awk '{print $3}' | xargs -I{} cp "{}" /libs
 
 # Minify binaries and create config folder
@@ -35,8 +38,8 @@ RUN --mount=type=cache,target=/root/.cache \
 # upx: 9.4M
 # --best: 9.1M
 # --brute: breaks the binary
-RUN upx --best /fmd && \
-    upx -t /fmd
+RUN upx --best /fmd/server && \
+    upx -t /fmd/server
 
 
 # Minimal image with C linkers available
@@ -50,9 +53,7 @@ COPY --from=builder /etc_group /etc/group
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Add needed files, libs and executable
-COPY --from=builder /fmd /fmd/server
-COPY --from=builder /go/src/findmydeviceserver/extra /fmd/extra
-COPY --from=builder /go/src/findmydeviceserver/web /fmd/web
+COPY --from=builder --chown=findmydeviceserver:findmydeviceserver /fmd /fmd
 COPY --from=builder /usr/lib/libobjectbox.so /usr/lib/libobjectbox.so
 
 # Setup needed libs for objectbox
@@ -61,8 +62,18 @@ COPY --from=builder /libs/ /usr/lib/
 # Setup data dir
 COPY --from=builder --chown=findmydeviceserver:findmydeviceserver /data /data
 
+# Setup default config.json
+COPY --chown=findmydeviceserver:findmydeviceserver <<EOF /config/config.json
+{
+ "PortSecure": 8081,
+ "PortUnsecure": 8080,
+ "IdLength": 5,
+ "MaxSavedLoc": 1000,
+ "MaxSavedPic": 10
+}
+EOF
+
 USER findmydeviceserver
-WORKDIR /fmd
-ENTRYPOINT ["/fmd/server", "-d", "/data"]
+ENTRYPOINT ["/fmd/server"]
 # Expose the webinterface and the protocol ports
 EXPOSE 1020/tcp
