@@ -1,0 +1,11 @@
+---
+on:
+  - push
+  - workflow_dispatch
+
+jobs:
+  docker:
+    uses: LANsible/github-workflows/.github/workflows/docker-build.yml@develop
+    with:
+      image_name: lansible/findmydeviceserver
+    secrets: inherit
