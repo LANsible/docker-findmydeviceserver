@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: findmydeviceserver
+  namespace: findmydevice
+  labels:
+    name: findmydeviceserver
+spec:
+  selector:
+    name: findmydeviceserver
+  ports:
+    - port: 80
+      name: http
+      targetPort: http

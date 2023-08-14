@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: findmydeviceserver-basic-auth
+  namespace: findmydevice
+stringData:
+  # echo 'pass' | openssl passwd -apr1 -stdin
+  finddevice: <output from above>
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: findmydeviceserver
+  namespace: findmydevice
+  labels:
+    app: findmydeviceserver
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret-type: auth-map
+    nginx.ingress.kubernetes.io/auth-secret: findmydeviceserver-basic-auth
+spec:
+  rules:
+    - host: &host finddeviceserver.example.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: findmydeviceserver
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - *host
+      secretName: finddeviceserver-cert

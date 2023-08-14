@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: findmydeviceserver
+  namespace: findmydevice
+data:
+  config.json: |
+    "{
+      "PortSecure": 8081,
+      "PortUnsecure": 8080,
+      "IdLength": 5,
+      "MaxSavedLoc": 1000,
+      "MaxSavedPic": 10
+    }"
