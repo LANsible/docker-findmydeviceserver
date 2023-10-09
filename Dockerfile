@@ -3,7 +3,7 @@ FROM golang:1.21-bullseye as builder
 
 # https://gitlab.com/Nulide/findmydeviceserver/-/tags
 # https://github.com/objectbox/objectbox-c/releases
-ENV VERSION=v0.3.6 \
+ENV VERSION=v0.4.0 \
     GOPATH=/go
 
 # Add unprivileged user
