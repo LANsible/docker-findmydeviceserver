@@ -76,4 +76,5 @@ EOF
 USER findmydeviceserver
 ENTRYPOINT ["/fmd/server"]
 # Expose the webinterface and the protocol ports
-EXPOSE 1020/tcp
+EXPOSE 8080/tcp
+EXPOSE 8081/tcp
